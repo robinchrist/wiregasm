@@ -268,7 +268,7 @@ void wg_session_process_frames_cb(capture_file *cfile, epan_dissect_t *edt, prot
   FrameMeta f;
   f.number = pi->num;
 
-  for (int col = 0; col < cinfo->num_cols; ++col) {
+  for (unsigned col = 0; col < cinfo->num_cols; ++col) {
     f.columns.push_back(string(get_column_text(cinfo, col)));
   }
 

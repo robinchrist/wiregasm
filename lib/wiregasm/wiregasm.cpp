@@ -51,7 +51,7 @@ static guint wg_apply_decode_as_module_cb(module_t *module, gpointer user_data _
 }
 
 static void wg_apply_decode_as_defaults() {
-  prefs_modules_foreach(wg_apply_decode_as_module_cb, NULL);
+  prefs_modules_foreach(prefs_get_module_tree(), wg_apply_decode_as_module_cb, NULL);
 }
 
 void failure_message(const char *msg_format, va_list ap) {
@@ -130,7 +130,7 @@ string wg_get_plugins_dir() {
 
   // get_plugins_dir relies on configuration_init being called
   // which only happens in wg_init
-  return string(get_plugins_dir());
+  return string(get_plugins_dir(application_configuration_environment_prefix()));
 }
 
 vector<string> wg_get_columns() {
@@ -139,7 +139,7 @@ vector<string> wg_get_columns() {
   column_info *cinfo = NULL;
   build_column_format_array(cinfo, prefs_p->num_cols, TRUE);
 
-  for (int i = 0; i < cinfo->num_cols; i++) {
+  for (unsigned i = 0; i < cinfo->num_cols; i++) {
     if (!get_column_visible(i))
       continue;
 
@@ -169,7 +169,7 @@ bool wg_reload_lua_plugins() {
     return false;
   }
 
-  wslua_reload_plugins(NULL, NULL);
+  wslua_reload_plugins(NULL, NULL, application_configuration_environment_prefix());
 
   on_status(INFO, "Reload complete!");
 
@@ -192,14 +192,14 @@ bool wg_init() {
   init_process_policies();
   relinquish_special_privs_perm();
 
-  char *cerr_msg = configuration_init("/wiregasm");
+  char *cerr_msg = configuration_init("/wiregasm", application_flavor_name_lower());
   if (cerr_msg != NULL) {
     on_status(ERROR, cerr_msg);
     g_free(cerr_msg);
     return false;
   }
 
-  const char *plugin_dir = get_plugins_dir();
+  const char *plugin_dir = get_plugins_dir(application_configuration_environment_prefix());
 
   if (plugin_dir == NULL || strlen(plugin_dir) == 0) {
     on_status(ERROR, "Failed to get plugins dir");
@@ -211,12 +211,21 @@ bool wg_init() {
   timestamp_set_type(TS_RELATIVE);
   timestamp_set_precision(TS_PREC_AUTO);
   timestamp_set_seconds_type(TS_SECONDS_DEFAULT);
-  wtap_init(TRUE);
+  const struct file_extension_info *file_extensions;
+  unsigned num_extensions;
+  application_file_extensions(&file_extensions, &num_extensions);
+  wtap_init(TRUE, application_configuration_environment_prefix(), file_extensions, num_extensions);
 
   on_status(INFO, "Registering all dissectors");
 
   // register all dissectors
-  if (!epan_init(NULL, NULL, TRUE)) {
+  epan_app_data_t app_data = {};
+  app_data.env_var_prefix = application_configuration_environment_prefix();
+  app_data.col_fmt = application_columns();
+  app_data.num_cols = application_num_columns();
+  app_data.register_func = register_all_protocols;
+  app_data.handoff_func = register_all_protocol_handoffs;
+  if (!epan_init(NULL, NULL, TRUE, &app_data)) {
     on_status(INFO, "Failure registering dissectors");
     return false;
   }
@@ -231,7 +240,7 @@ bool wg_init() {
   on_status(INFO, "Initializing color filters");
 
   gchar *err_msg;
-  if (!color_filters_init(&err_msg, NULL)) {
+  if (!color_filters_init(&err_msg, NULL, application_configuration_environment_prefix())) {
     on_status(WARN, err_msg);
     g_free(err_msg);
   }
@@ -409,7 +418,7 @@ guint wg_list_modules_cb(module_t *module, gpointer user_data) {
   }
 
   if (prefs_module_has_submodules(module)) {
-    prefs_modules_foreach_submodules(module, wg_list_modules_cb, &subholder);
+    prefs_modules_foreach_submodules(module->submodules, wg_list_modules_cb, &subholder);
     m.submodules = subholder.modules;
   }
 
@@ -421,7 +430,7 @@ guint wg_list_modules_cb(module_t *module, gpointer user_data) {
 vector<PrefModule> wg_list_modules() {
   PrefModuleHolder holder;
   holder.root = true;
-  prefs_modules_foreach(wg_list_modules_cb, &holder);
+  prefs_modules_foreach(prefs_get_module_tree(), wg_list_modules_cb, &holder);
   return holder.modules;
 }
 

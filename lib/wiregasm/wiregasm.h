@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <wireshark/cfile.h>
+#include <epan/cfile.h>
 
 struct ProtoTree {
   std::string label;

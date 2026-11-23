@@ -1,4 +1,6 @@
 # Wiregasm
+
+> **This fork** (branch `wireshark-5.0`) builds [good-tools/wiregasm](https://github.com/good-tools/wiregasm) 2.0.0 against Wireshark 5.0.0rc2. Everything that differs from upstream Wireshark and its dependencies is in `patches/` and `overlay/`; the upstream versions are pinned in `mk/deps/`. The patched Wireshark source is also on the branch [`wiregasm-5.0.0rc2` of robinchrist/wireshark](https://github.com/robinchrist/wireshark/tree/wiregasm-5.0.0rc2). Build with `make docker`; releases carry the npm package and the source tarballs of the LGPL dependencies.
 [![Build & Test](https://github.com/good-tools/wiregasm/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/good-tools/wiregasm/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/@goodtools/wiregasm)](https://www.npmjs.com/package/@goodtools/wiregasm)
 [![Downloads](https://img.shields.io/npm/dm/@goodtools/wiregasm)](https://www.npmjs.com/package/@goodtools/wiregasm)

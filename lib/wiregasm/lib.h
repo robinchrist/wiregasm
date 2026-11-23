@@ -22,7 +22,9 @@
 #include <epan/timestamp.h>
 #include <epan/tvbuff.h>
 #include <glib.h>
-#include <wireshark/cfile.h>
+#include <epan/cfile.h>
+#include <app/application_flavor.h>
+#include <epan/register.h>
 #include <wiretap/wtap.h>
 #include <wsutil/filesystem.h>
 #include <wsutil/str_util.h>

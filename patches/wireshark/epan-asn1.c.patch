@@ -1,0 +1,20 @@
+Why: WebAssembly has no floating-point exception flags (FE_OVERFLOW, FE_UNDERFLOW are undefined);
+fall back to errno, which ldexp sets on overflow and underflow.
+
+diff --git a/epan/asn1.c b/epan/asn1.c
+index 461dd3a2fa29d86169efb9c9301607f5cf561ca7..684d91f8378859e213e17e36305ea35d92498729 100644
+--- a/epan/asn1.c
++++ b/epan/asn1.c
+@@ -359,7 +359,12 @@ double asn1_get_real(const uint8_t *real_ptr, int len, int *err) {
+       errno = 0;
+       feclearexcept(FE_ALL_EXCEPT);
+       val = ldexp((double) S * N, exp);
++#if defined(FE_OVERFLOW) && defined(FE_UNDERFLOW)
+       if (errno || fetestexcept(FE_OVERFLOW | FE_UNDERFLOW)) {
++#else
++      /* no floating-point exception flags (WebAssembly): ldexp sets errno */
++      if (errno) {
++#endif
+         *err = ERANGE;
+       }
+ #ifndef _MSC_VER

@@ -1,6 +1,6 @@
-wireshark_VERSION := 4.6.9
+wireshark_VERSION := 5.0.0rc2
 wireshark_URL     := https://www.wireshark.org/download/src/all-versions/wireshark-$(wireshark_VERSION).tar.xz
-wireshark_SHA512  := dde86fafc38132c834fb28865f66351aa7cdaccaabc7612731fd418014cf8624471a2a20a5b3a6546bf4b1c397f04d35271bd92a6e4680d63caeabee90cab6aa
+wireshark_SHA512  := 5e430827dc05cd1c8f28a1f1baba7ee31ee29c2a1633720f320e8bc576e298dafc607f4c4108b48a6109929fb0333837c70ed089a55de6eb0d596fa5d5af79ab
 wireshark_BUILD   := cmake
 wireshark_DEPS    := c-ares gcrypt glib libxml2 nghttp2
 # only libwireshark (epan) is needed: no tools, no C plugins (not loadable in
